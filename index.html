@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amora.lyn - Envie mensagens anônimas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f3e8ff 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.6s ease-out;
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.6s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .scale-in {
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.8s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.5); }
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        
+        .animate-scroll {
+            animation: scroll 8s linear infinite;
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .testimonials-container:hover .animate-scroll {
+            animation-play-state: paused;
+        }
+        
+        .step-card {
+            transition: all 0.3s ease;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .send-button:hover {
+            background: linear-gradient(135deg, #db2777 0%, #9d174d 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+        }
+        
+        .payment-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .payment-option:hover {
+            transform: scale(1.02);
+        }
+        
+        .payment-option.selected {
+            border-color: #ec4899;
+            background-color: #fdf2f8;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .mp-form {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .mp-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .mp-form input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+        
+        .pix-container {
+            text-align: center;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .pix-code {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-100">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between w-full">
+                <div class="flex items-center space-x-3">
+                    <img 
+                        src="imagens/amoralyn.png" 
+                        alt="Amora.lyn Logo" 
+                        class="w-10 h-10 rounded-xl object-cover"
+                        onerror="this.src='imagens/amoralyn.jpg'; this.onerror=function(){this.src='imagens/amoralyn.jpeg'; this.onerror=function(){this.src='imagens/amoralyn.webp'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='flex';};};;};"
+                    >
+                    <div class="w-10 h-10 bg-pink-500 rounded-xl items-center justify-center" style="display: none;">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-bold text-pink-900">Amora.lyn</span>
+                </div>
+
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Landing Page -->
+    <section id="mainPage" class="container mx-auto px-4 py-16">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight fade-in">
+                <span class="text-pink-500">Cartas de amor especiais</span><br>
+                que tocam o coração
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8 fade-in stagger-1">
+                Somos a Amora.lyn, um site onde você pode criar cartinhas online de amor personalizadas com música e datas importantes
+            </p>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="max-w-md mx-auto mb-12">
+            <div class="glass-effect rounded-2xl p-8 shadow-xl text-center floating-animation bounce-in stagger-2 pulse-glow">
+                <div class="mb-6">
+                    <span class="text-gray-500 line-through text-2xl">R$ 49,99</span>
+                    <div class="text-4xl font-bold text-pink-600 mb-2">R$ 24,99</div>
+                    <div class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium inline-block mb-3">
+                        🔥 Promoção Limitada
+                    </div>
+                    <div class="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-bold">
+                        ⏰ Termina em: <span id="countdown" class="font-mono text-lg">59:59</span>
+                    </div>
+                </div>
+                
+                <button 
+                    onclick="showCreatePage()"
+                    class="send-button w-full py-4 px-8 text-white font-semibold rounded-xl text-lg flex items-center justify-center space-x-2 mb-4"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    <span>Crie sua carta</span>
+                </button>
+                
+                <p class="text-sm text-gray-500">
+                    Pagamento seguro • Entrega garantida
+                </p>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-12 fade-in stagger-3">
+                Por que escolher o Amora.lyn?
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center p-6 scale-in stagger-1">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Álbum</h3>
+                    <p class="text-gray-600 text-sm">Adicione imagens de momentos especiais</p>
+                </div>
+
+                <div class="text-center p-6 scale-in stagger-2">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Com Música</h3>
+                    <p class="text-gray-600 text-sm">Adicione a trilha sonora perfeita para sua carta</p>
+                </div>
+
+                <div class="text-center p-6 scale-in stagger-3">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zM4 19h16v2H4z"/>
+                            <path d="M20 4H4v2h16V4zM6 7v2h12V7H6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Datas Especiais</h3>
+                    <p class="text-gray-600 text-sm">Marque momentos importantes do relacionamento</p>
+                </div>
+
+                <div class="text-center p-6 scale-in stagger-4">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Entrega Rápida</h3>
+                    <p class="text-gray-600 text-sm">Sua carta fica pronta em menos de 24 horas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="max-w-6xl mx-auto mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-12 fade-in">
+                O que nossos usuários dizem
+            </h2>
+            
+            <div class="testimonials-container overflow-hidden">
+                <div class="testimonials-track flex gap-6 animate-scroll">
+                    <!-- Testimonial 1 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">M</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Maria Silva</div>
+                                <div class="text-sm text-gray-500">São Paulo</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Consegui surpreender meu namorado de uma forma única! Ele ficou emocionado com a carta anônima. ❤️"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">J</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">João Santos</div>
+                                <div class="text-sm text-gray-500">Rio de Janeiro</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "A música que adicionei na carta fez toda a diferença. Minha esposa chorou de emoção! 🎵"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">A</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Ana Costa</div>
+                                <div class="text-sm text-gray-500">Belo Horizonte</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Perfeito para quem quer demonstrar amor de forma criativa e anônima. Super recomendo! 💕"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 4 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">C</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Carlos Oliveira</div>
+                                <div class="text-sm text-gray-500">Salvador</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Minha namorada ficou surpresa! A carta chegou no dia seguinte, super rápido e bem feito. 🚀"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 5 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">L</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Larissa Pereira</div>
+                                <div class="text-sm text-gray-500">Brasília</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "O álbum de fotos ficou lindo! Consegui colocar todas as nossas memórias especiais. 📸"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 6 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">R</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Rafael Lima</div>
+                                <div class="text-sm text-gray-500">Fortaleza</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Valeu cada centavo! Minha esposa disse que foi o presente mais romântico que já recebeu. 💝"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 7 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">F</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Fernanda Alves</div>
+                                <div class="text-sm text-gray-500">Recife</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Adorei poder marcar as datas especiais! Ficou muito personalizado e emocionante. 📅"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 8 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">P</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Pedro Rodrigues</div>
+                                <div class="text-sm text-gray-500">Curitiba</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Processo super fácil e resultado incrível! Recomendo para todos os casais. 👫"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 9 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">G</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Gabriela Martins</div>
+                                <div class="text-sm text-gray-500">Porto Alegre</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Meu marido ficou sem palavras! A carta chegou no aniversário de namoro. Timing perfeito! 🎂"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 10 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">T</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Thiago Ferreira</div>
+                                <div class="text-sm text-gray-500">Goiânia</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Qualidade incrível! As fotos ficaram lindas e a música tocou perfeitamente. Vale muito! 🎶"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 11 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">I</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Isabela Souza</div>
+                                <div class="text-sm text-gray-500">Manaus</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Serviço impecável! Consegui incluir 15 fotos e ficou lindo demais. Meu namorado amou! 📷"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 12 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">D</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Diego Barbosa</div>
+                                <div class="text-sm text-gray-500">Natal</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Entrega super rápida mesmo! Fiz o pedido de manhã e chegou no mesmo dia à noite. Top! ⚡"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 13 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">V</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Vitória Mendes</div>
+                                <div class="text-sm text-gray-500">Florianópolis</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Adorei a opção de marcar datas especiais! Coloquei nosso primeiro beijo e primeiro 'eu te amo'. 💋"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 14 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">B</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Bruno Carvalho</div>
+                                <div class="text-sm text-gray-500">Campo Grande</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Minha esposa chorou de emoção! A carta ficou linda e a música de fundo foi perfeita. 😭❤️"
+                        </p>
+                    </div>
+
+                    <!-- Testimonial 15 -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">C</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Camila Rocha</div>
+                                <div class="text-sm text-gray-500">Aracaju</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Preço justo e resultado incrível! Já recomendei para todas as minhas amigas. Vocês são demais! 👏"
+                        </p>
+                    </div>
+
+                    <!-- Duplicate testimonials for seamless loop -->
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">M</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">Maria Silva</div>
+                                <div class="text-sm text-gray-500">São Paulo</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "Consegui surpreender meu namorado de uma forma única! Ele ficou emocionado com a carta anônima. ❤️"
+                        </p>
+                    </div>
+
+                    <div class="testimonial-card bg-white rounded-2xl p-6 shadow-lg min-w-80 flex-shrink-0">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                                <span class="text-pink-600 font-bold">J</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-semibold text-gray-900">João Santos</div>
+                                <div class="text-sm text-gray-500">Rio de Janeiro</div>
+                            </div>
+                        </div>
+                        <div class="flex mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            "A música que adicionei na carta fez toda a diferença. Minha esposa chorou de emoção! 🎵"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Create Letter Page (Hidden by default) -->
+    <section id="createPage" class="container mx-auto px-4 py-16 hidden">
+        <div class="text-center mb-12">
+            <button 
+                onclick="showMainPage()"
+                class="inline-flex items-center text-pink-600 hover:text-pink-700 mb-6 fade-in"
+            >
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Voltar
+            </button>
+            
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight fade-in stagger-1">
+                Vamos começar a criar<br>
+                <span class="text-pink-500">seu presente de amor</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto fade-in stagger-2">
+                Suas informações estão totalmente seguras e não serão compartilhadas com ninguém
+            </p>
+        </div>
+
+        <!-- Message Form -->
+        <div class="max-w-2xl mx-auto mb-16">
+            <div class="glass-effect rounded-2xl p-8 shadow-xl floating-animation bounce-in stagger-3">
+                <form id="messageForm" class="space-y-6">
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sua carta
+                        </label>
+                        <textarea 
+                            id="message" 
+                            rows="6" 
+                            placeholder="Escreva sua carta aqui..."
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none transition-all duration-200"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div>
+                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">
+                            Data do começo do namoro (opcional)
+                        </label>
+                        <input 
+                            type="date" 
+                            id="startDate"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="music" class="block text-sm font-medium text-gray-700 mb-2">
+                            Música (opcional)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="music"
+                            placeholder="Adicione o link ou nome da música aqui..."
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+
+                    <button 
+                        type="submit"
+                        class="send-button w-full py-4 px-8 text-white font-semibold rounded-xl text-lg flex items-center justify-center space-x-2"
+                        id="submitBtn"
+                    >
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                        <span>Enviar Carta</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-4xl mx-auto mt-16 text-center">
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="flex items-center justify-center space-x-3 p-4">
+                    <svg class="w-6 h-6 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                    <span class="text-gray-700 font-medium">Álbum</span>
+                </div>
+                <div class="flex items-center justify-center space-x-3 p-4">
+                    <svg class="w-6 h-6 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                    </svg>
+                    <span class="text-gray-700 font-medium">Entrega Rápida</span>
+                </div>
+                <div class="flex items-center justify-center space-x-3 p-4">
+                    <svg class="w-6 h-6 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                    <span class="text-gray-700 font-medium">Com Música</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-100 py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600">
+                © 2025 Amora.lyn - Todos os direitos reservados
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Countdown Timer
+        let timeLeft = 3600; // 1 hour in seconds
+        
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                countdownElement.textContent = "00:00";
+                countdownElement.parentElement.innerHTML = '⏰ <span class="text-yellow-300">Promoção Expirada!</span>';
+                return;
+            }
+            
+            // Change color when time is running out
+            if (timeLeft <= 300) { // Last 5 minutes
+                countdownElement.parentElement.className = 'bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold animate-pulse';
+            } else if (timeLeft <= 600) { // Last 10 minutes
+                countdownElement.parentElement.className = 'bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold';
+            }
+            
+            timeLeft--;
+        }
+        
+        // Start countdown
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Navigation functions
+        function showCreatePage() {
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('createPage').classList.remove('hidden');
+        }
+        
+        function showMainPage() {
+            document.getElementById('createPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+        }
+
+        // Submissão do formulário
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = document.getElementById('message').value;
+            const startDate = document.getElementById('startDate').value;
+            const music = document.getElementById('music').value;
+            
+            if (!message.trim()) {
+                alert('Por favor, escreva sua carta.');
+                return;
+            }
+            
+            // Simular envio da carta
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg><span>Enviando carta...</span>';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                // Preparar mensagem para WhatsApp
+                let whatsappMessage = "🌹 *NOVA CARTA DE AMOR - AMORA.LYN* 🌹\n\n";
+                whatsappMessage += "📝 *CARTA:*\n" + message + "\n\n";
+                
+                if (startDate) {
+                    const formattedDate = new Date(startDate).toLocaleDateString('pt-BR');
+                    whatsappMessage += "💕 *DATA DO NAMORO:* " + formattedDate + "\n\n";
+                }
+                
+                if (music.trim()) {
+                    whatsappMessage += "🎵 *MÚSICA:* " + music + "\n\n";
+                }
+                
+                whatsappMessage += "⏰ *Enviado em:* " + new Date().toLocaleString('pt-BR') + "\n";
+                whatsappMessage += "💰 *Valor:* R$ 24,99";
+                
+                // Seu número do WhatsApp (substitua pelo seu número real)
+                const phoneNumber = "5588981238100"; // Formato: código do país + DDD + número
+                
+                // Codificar a mensagem para URL
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                
+                // Criar link do WhatsApp
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+                
+                // Detectar se é iOS
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                
+                // Tentar abrir WhatsApp com diferentes métodos para máxima compatibilidade
+                if (isIOS) {
+                    // Para iOS: tenta o esquema whatsapp:// primeiro
+                    const iosWhatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
+                    
+                    // Criar um link invisível e clicar nele (funciona melhor no iOS)
+                    const link = document.createElement('a');
+                    link.href = iosWhatsappUrl;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Fallback para iOS: se o app não abrir, tenta o link web
+                    setTimeout(() => {
+                        const webLink = document.createElement('a');
+                        webLink.href = whatsappUrl;
+                        webLink.target = '_blank';
+                        webLink.rel = 'noopener noreferrer';
+                        document.body.appendChild(webLink);
+                        webLink.click();
+                        document.body.removeChild(webLink);
+                    }, 2000);
+                } else {
+                    // Para Android e Desktop
+                    try {
+                        // Primeiro tenta abrir o app do WhatsApp
+                        window.location.href = whatsappUrl;
+                        
+                        // Fallback: se não funcionar, tenta em nova aba após um delay
+                        setTimeout(() => {
+                            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                        }, 1500);
+                    } catch (error) {
+                        // Se tudo falhar, abre em nova aba
+                        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                    }
+                }
+                
+                // Mostrar mensagem de sucesso
+                alert('✅ Sua carta foi enviada! Você será redirecionado para o WhatsApp para finalizar o pedido. 💕');
+                
+                // Limpar formulário
+                document.getElementById('messageForm').reset();
+                
+                // Restaurar botão
+                submitBtn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg><span>Enviar Carta</span>';
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9894ccdb83a92755',t:'MTc1OTU4MjE3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
